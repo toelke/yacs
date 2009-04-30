@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ ! -f "$1" ]; then
+	echo $1 is no file!
+	exit 1
+fi
+
+if [ ${1:0:1} == '/' ]; then
+	dir=$(dirname "$1")
+	file=$(basename "$1")
+else
+	mf=$PWD/$1
+	dir=$(dirname "$mf")
+	file=$(basename "$mf")
+fi
+
+mkdir -pv /home/me/mvof/data/$dir
+
+cp -v $1 /home/me/mvof/data/$dir
+
+cd /home/me/mvof/data
+
+git add ./$dir/$file
+
+git ci -a -m "Autocommit: mvofified $dir/$file;"
