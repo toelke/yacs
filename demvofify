@@ -1,0 +1,39 @@
+#!/bin/bash
+
+source $(dirname "$0")/config
+
+if [ ${1:0:1} == '/' ]; then
+	dir=$(dirname "$1")
+	file=$(basename "$1")
+else
+	mf=$PWD/$1
+	dir=$(dirname "$mf")
+	file=$(basename "$mf")
+fi
+
+SRC=$DATA/$dir/$file
+DEST=$dir/$file
+
+if [ ! -d "$SRC" ]; then
+	echo $DEST is not under mvofs control
+	exit 1
+fi
+
+if [ -e $DEST -a ! -f $DEST ]; then
+	echo $DEST is a directory!
+	exit 1
+fi
+
+if [ -e $SRC/$HOSTNAME ]; then
+	SRC=$SRC/$HOSTNAME
+else
+	SRC=$SRC/DEFAULT
+fi
+
+if [ -e $DEST ] && diff $SRC $DEST > /dev/null; then
+	echo $DEST already there and new.
+	exit 0
+fi
+
+cp -v $DEST $(dirname $SRC)/$HOSTNAME.$(date +%Y%m%d%H%M)
+cp -v $SRC $DEST
