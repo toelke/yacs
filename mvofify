@@ -1,6 +1,10 @@
 #!/bin/bash
 
-source $(dirname "$0")/config
+if [ -e $(dirname "$0")/config.$HOSTNAME]; then
+	source $(dirname "$0")/config.$HOSTNAME
+else
+	source $(dirname "$0")/config
+fi
 
 if [ ! -f "$1" ]; then
 	echo $1 is no file!
