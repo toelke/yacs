@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -e $(dirname "$0")/config.$HOSTNAME]; then
+if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
 	source $(dirname "$0")/config.$HOSTNAME
 else
 	source $(dirname "$0")/config
@@ -35,4 +35,4 @@ cd $DATA
 git add ./$dir/$file/$HOSTNAME
 git add ./$dir/$file/file-mode
 
-git ci -a -m "Autocommit: mvofified $dir/$file;"
+git commit -a -m "Autocommit: mvofified $dir/$file;"
