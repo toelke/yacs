@@ -16,7 +16,7 @@ else
 	file=$(basename "$mf")
 fi
 
-mkdir -pv $DATA/data/$dir/$file
+mkdir -pv $DATA/$dir/$file
 
 target=$DATA/$dir/$file/$HOSTNAME
 
