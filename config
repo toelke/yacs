@@ -1,2 +1,2 @@
-BASE=/home/me/mvof
-DATA=$BASE/data
+export BASE=/home/me/mvof
+export DATA=$BASE/data

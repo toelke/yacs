@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -e $(dirname "$0")/config.$HOSTNAME]; then
+if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
 	source $(dirname "$0")/config.$HOSTNAME
 else
 	source $(dirname "$0")/config
@@ -15,8 +15,30 @@ else
 	file=$(basename "$mf")
 fi
 
-SRC=$DATA/$dir/$file
-DEST=$dir/$file
+export SRC=$DATA/$dir/$file
+export ORIG_SRC=$DATA/$dir/$file
+export DEST=$dir/$file
+export CLASSES=''
+
+[ -e $DATA/classes.$HOSTNAME ] && export CLASSES=$(cat $DATA/classes.$HOSTNAME)
+
+function find_class_file {
+	for i in $HOSTNAME $CLASSES DEFAULT; do
+		if [ -e $ORIG_SRC/$i ]; then
+		   echo $ORIG_SRC/$i
+		   return
+	   fi
+   done
+}
+
+function find_executable_class_file {
+	for i in $HOSTNAME $CLASSES DEFAULT; do
+		if [ -x $ORIG_SRC/$1.$i ]; then
+		   echo $ORIG_SRC/$1.$i
+		   return
+	   fi
+   done
+}
 
 if [ ! -d "$SRC" ]; then
 	echo $DEST is not under mvofs control
@@ -28,10 +50,19 @@ if [ -e $DEST -a ! -f $DEST ]; then
 	exit 1
 fi
 
-if [ -e $SRC/$HOSTNAME ]; then
-	SRC=$SRC/$HOSTNAME
-else
-	SRC=$SRC/DEFAULT
+export SRC=$(find_class_file)
+export PRE=$(find_executable_class_file pre)
+export INSTEAD=$(find_executable_class_file instead)
+export POST=$(find_executable_class_file post)
+
+if [ -z "$SRC" -a -z "$INSTEAD" ]; then
+	echo $DEST does not exist for these classes
+	exit 1
+fi
+
+if [ -n "$INSTEAD" ]; then
+	export SRC=$(mktemp)
+	$INSTEAD > $SRC
 fi
 
 if [ -e $DEST ] && diff $SRC $DEST > /dev/null; then
@@ -43,4 +74,8 @@ if [ -e $DEST ]; then
 	cp -v $DEST $(dirname $SRC)/$HOSTNAME.$(date +%Y%m%d%H%M)
 fi
 
+[ -n "$PRE" ] && $PRE
+
 cp -v $SRC $DEST
+
+[ -n "$POST" ] && $POST
