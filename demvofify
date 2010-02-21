@@ -71,7 +71,7 @@ if [ -e $DEST ] && diff $SRC $DEST > /dev/null; then
 fi
 
 if [ -e $DEST ]; then
-	cp -v $DEST $(dirname $SRC)/$HOSTNAME.$(date +%Y%m%d%H%M)
+	cp -v $DEST $(dirname $ORIG_SRC)/$HOSTNAME.$(date +%Y%m%d%H%M)
 fi
 
 [ -n "$PRE" ] && $PRE
