@@ -31,6 +31,16 @@ function find_class_file {
    done
 }
 
+function find_mode_file {
+	for i in $HOSTNAME $CLASSES DEFAULT; do
+		if [ -e $ORIG_SRC/file-mode.$i ]; then
+		   echo $ORIG_SRC/file-mode.$i
+		   return
+	   fi
+	done
+	echo $ORIG_SRC/file-mode
+}
+
 function find_executable_class_file {
 	for i in $HOSTNAME $CLASSES DEFAULT; do
 		if [ -x $ORIG_SRC/$1.$i ]; then
@@ -54,6 +64,7 @@ export SRC=$(find_class_file)
 export PRE=$(find_executable_class_file pre)
 export INSTEAD=$(find_executable_class_file instead)
 export POST=$(find_executable_class_file post)
+export MODE=$(cat "$(find_mode_file)")
 
 if [ -z "$SRC" -a -z "$INSTEAD" ]; then
 	echo $DEST does not exist for these classes
@@ -67,15 +78,20 @@ fi
 
 if [ -e $DEST ] && diff $SRC $DEST > /dev/null; then
 	echo $DEST already there and new.
-	exit 0
+else
+	if [ -e $DEST ]; then
+		cp -v $DEST $ORIG_SRC/$HOSTNAME.$(date +%Y%m%d%H%M)
+	fi
+
+	[ -n "$PRE" ] && $PRE
+
+	cp -v $SRC $DEST
+
+	[ -n "$POST" ] && $POST
 fi
 
-if [ -e $DEST ]; then
-	cp -v $DEST $ORIG_SRC/$HOSTNAME.$(date +%Y%m%d%H%M)
+if [ "$(stat -c "%U:%G %a" $DEST)" != "$MODE" ]; then
+	echo Setting mode to $MODE
+	chown -v ${MODE% *} $DEST
+	chmod -v ${MODE#* } $DEST
 fi
-
-[ -n "$PRE" ] && $PRE
-
-cp -v $SRC $DEST
-
-[ -n "$POST" ] && $POST
