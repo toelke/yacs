@@ -57,7 +57,7 @@ function find_executable_class_file {
 }
 
 if [ ! -d "$SRC" ]; then
-	echo $DEST is not under mvofs control
+	echo $DEST is not under yacss control
 	exit 1
 fi
 

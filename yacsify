@@ -39,4 +39,4 @@ cd $DATA
 git add ./$dir/$file/$HOSTNAME
 git add ./$dir/$file/file-mode
 
-git commit -a -m "Autocommit: mvofified $dir/$file;"
+git commit -a -m "Autocommit: yacsified $dir/$file;"
