@@ -6,6 +6,12 @@ else
 	source $(dirname "$0")/config
 fi
 
+[ -z $CP ] && export CP=cp
+[ -z $STAT ] && export STAT=stat
+[ -z $CHMOD ] && export CHMOD=chmod
+[ -z $CHOWN ] && export CHOWN=chown
+[ -z $MKTEMP ] && export MKTEMP=mktemp
+
 if [ ${1:0:1} == '/' ]; then
 	dir=$(dirname "$1")
 	file=$(basename "$1")
@@ -72,7 +78,7 @@ if [ -z "$SRC" -a -z "$INSTEAD" ]; then
 fi
 
 if [ -n "$INSTEAD" ]; then
-	export SRC=$(mktemp)
+	export SRC=$($MKTEMP)
 	$INSTEAD > $SRC
 fi
 
@@ -80,18 +86,18 @@ if [ -e $DEST ] && diff $SRC $DEST > /dev/null; then
 	echo $DEST already there and new.
 else
 	if [ -e $DEST ]; then
-		cp -v $DEST $ORIG_SRC/$HOSTNAME.$(date +%Y%m%d%H%M)
+		$CP -v $DEST $ORIG_SRC/$HOSTNAME.$(date +%Y%m%d%H%M)
 	fi
 
 	[ -n "$PRE" ] && $PRE
 
-	cp -v $SRC $DEST
+	$CP -v $SRC $DEST
 
 	[ -n "$POST" ] && $POST
 fi
 
-if [ "$(stat -c "%U:%G %a" $DEST)" != "$MODE" ]; then
+if [ "$($STAT -c "%U:%G %a" $DEST)" != "$MODE" ]; then
 	echo Setting mode to $MODE
-	chown -v ${MODE% *} $DEST
-	chmod -v ${MODE#* } $DEST
+	$CHOWN -v ${MODE% *} $DEST
+	$CHMOD -v ${MODE#* } $DEST
 fi
