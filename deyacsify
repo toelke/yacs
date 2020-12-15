@@ -44,10 +44,17 @@ else
 	file=$(basename "$mf")
 fi
 
-log D will handle file $file from directory $dir
+log D will try to create file $file in directory $dir
 
-export SRC=$DATA/$dir/$file
-export ORIG_SRC=$DATA/$dir/$file
+if [[ ! ("$(realpath --relative-to $HOME $dir)" =~ "../") ]]; then
+	tdir=HOME/$(realpath --relative-to $HOME $dir)
+else
+	tdir=$dir
+fi
+log D dir in target is $tdir
+
+export SRC=$DATA/$tdir/$file
+export ORIG_SRC=$DATA/$tdir/$file
 export DEST=$dir/$file
 export CLASSES=''
 
