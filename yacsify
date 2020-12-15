@@ -1,5 +1,25 @@
 #!/bin/bash -eu
 
+# EWID
+LOGLEVEL=${LOGLEVEL=W}
+
+log() {
+	ll=$1
+	if [ $LOGLEVEL == I ]; then
+		if [[ "D" == *$ll* ]]; then
+			return
+		fi
+	elif [ $LOGLEVEL == W ]; then
+		if [[ "DI" == *$ll* ]]; then
+			return
+		fi
+	elif [ $LOGLEVEL == E ]; then
+		if [[ "DIW" == *$ll* ]]; then
+			return
+		fi
+	fi
+	echo $@
+}
 if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
 	source $(dirname "$0")/config.$HOSTNAME
 else
