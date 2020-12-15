@@ -72,10 +72,15 @@ fi
 
 log D will handle file $file from directory $dir
 
-$MKDIR -p $DATA/$dir/$file
+if [[ ! ("$(realpath --relative-to $HOME $dir/$file)" =~ "../") ]]; then
+	tdir=HOME/$(realpath --relative-to $HOME $dir)
+else
+	tdir=$dir
+fi
+log D dir in target is $tdir
 
 targetfilename=${TARGET_CLASS=$HOSTNAME}
-target=$DATA/$dir/$file/$targetfilename
+target=$DATA/$tdir/$file/$targetfilename
 log D will copy to $target
 
 if [[ -e $target && ! $FORCE -eq 1 ]]; then
@@ -83,16 +88,18 @@ if [[ -e $target && ! $FORCE -eq 1 ]]; then
 	exit 1
 fi
 
+$MKDIR -p $DATA/$tdir/$file
+
 $CP -v $1 $target
 chmod 644 $target
 
-$STAT -c "%U:%G %a" $1 > $DATA/$dir/$file/file-mode
+$STAT -c "%U:%G %a" $1 > $DATA/$tdir/$file/file-mode
 
 cd $DATA
 
 if [ -d .git ]; then
-	git add ./$dir/$file/$HOSTNAME
-	git add ./$dir/$file/file-mode
+	git add ./$tdir/$file/$HOSTNAME
+	git add ./$tdir/$file/file-mode
 
 	git commit -a -m "Autocommit: yacsified $dir/$file;"
 else
