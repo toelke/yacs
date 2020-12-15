@@ -54,10 +54,9 @@ target=$DATA/$dir/$file/$HOSTNAME
 log D will copy to $target
 
 $CP -v $1 $target
+chmod 644 $target
 
 $STAT -c "%U:%G %a" $1 > $DATA/$dir/$file/file-mode
-
-chmod 644 $target
 
 cd $DATA
 
