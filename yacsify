@@ -56,6 +56,11 @@ if [ ! -f "$1" ]; then
 	exit 1
 fi
 
+if [ -L "$1" ]; then
+	log E $1 is a symlink
+	exit 1
+fi
+
 if [ ${1:0:1} == '/' ]; then
 	dir=$(dirname "$1")
 	file=$(basename "$1")
