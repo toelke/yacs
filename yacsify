@@ -21,6 +21,8 @@ log() {
 	echo $@
 }
 
+FORCE=0
+
 while [[ $# -gt 1 ]]; do
 	if [[ "$1" == "--default" || "$1" == "-d" ]]; then
 		shift
@@ -31,6 +33,9 @@ while [[ $# -gt 1 ]]; do
 		TARGET_CLASS=$1
 		shift
 		log D using TARGET_CLASS=$TARGET_CLASS
+	elif [[ "$1" == "--force" || "$1" == "-f" ]]; then
+		shift
+		FORCE=1
 	fi
 done
 
@@ -67,6 +72,11 @@ $MKDIR -p $DATA/$dir/$file
 targetfilename=${TARGET_CLASS=$HOSTNAME}
 target=$DATA/$dir/$file/$targetfilename
 log D will copy to $target
+
+if [[ -e $target && ! $FORCE -eq 1 ]]; then
+	log E $target already exists, doing nothing, use --force
+	exit 1
+fi
 
 $CP -v $1 $target
 chmod 644 $target
