@@ -72,7 +72,7 @@ fi
 
 log D will handle file $file from directory $dir
 
-if [[ ! ("$(realpath --relative-to $HOME $dir/$file)" =~ "../") ]]; then
+if [[ ! ("$(realpath --relative-to $HOME $dir)" =~ "../") ]]; then
 	tdir=HOME/$(realpath --relative-to $HOME $dir)
 else
 	tdir=$dir
