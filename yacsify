@@ -20,6 +20,20 @@ log() {
 	fi
 	echo $@
 }
+
+while [[ $# -gt 1 ]]; do
+	if [[ "$1" == "--default" || "$1" == "-d" ]]; then
+		shift
+		TARGET_CLASS=DEFAULT
+		log D using TARGET_CLASS=$TARGET_CLASS
+	elif [[ "$1" == "--class" || "$1" == "-c" ]]; then
+		shift
+		TARGET_CLASS=$1
+		shift
+		log D using TARGET_CLASS=$TARGET_CLASS
+	fi
+done
+
 if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
 	log I loading config $(dirname "$0")/config.$HOSTNAME
 	source $(dirname "$0")/config.$HOSTNAME
@@ -50,7 +64,8 @@ log D will handle file $file from directory $dir
 
 $MKDIR -p $DATA/$dir/$file
 
-target=$DATA/$dir/$file/$HOSTNAME
+targetfilename=${TARGET_CLASS=$HOSTNAME}
+target=$DATA/$dir/$file/$targetfilename
 log D will copy to $target
 
 $CP -v $1 $target
