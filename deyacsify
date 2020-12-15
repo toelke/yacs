@@ -1,8 +1,31 @@
 #!/bin/bash -eu
 
+# EWID
+LOGLEVEL=${LOGLEVEL=W}
+
+log() {
+	ll=$1
+	if [ $LOGLEVEL == I ]; then
+		if [[ "D" == *$ll* ]]; then
+			return
+		fi
+	elif [ $LOGLEVEL == W ]; then
+		if [[ "DI" == *$ll* ]]; then
+			return
+		fi
+	elif [ $LOGLEVEL == E ]; then
+		if [[ "DIW" == *$ll* ]]; then
+			return
+		fi
+	fi
+	echo $@
+}
+
 if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
+	log I loading config $(dirname "$0")/config.$HOSTNAME
 	source $(dirname "$0")/config.$HOSTNAME
 else
+	log I loading config $(dirname "$0")/config
 	source $(dirname "$0")/config
 fi
 
@@ -20,6 +43,8 @@ else
 	dir=$(dirname "$mf")
 	file=$(basename "$mf")
 fi
+
+log D will handle file $file from directory $dir
 
 export SRC=$DATA/$dir/$file
 export ORIG_SRC=$DATA/$dir/$file
@@ -57,12 +82,12 @@ function find_executable_class_file {
 }
 
 if [ ! -d "$SRC" ]; then
-	echo $DEST is not under yacss control
+	log E $DEST is not under yacss control
 	exit 1
 fi
 
 if [ -e $DEST -a ! -f $DEST ]; then
-	echo $DEST is a directory!
+	log E $DEST is a directory!
 	exit 1
 fi
 
@@ -73,7 +98,7 @@ export POST=$(find_executable_class_file post)
 export MODE=$(cat "$(find_mode_file)")
 
 if [ -z "$SRC" -a -z "$INSTEAD" ]; then
-	echo $DEST does not exist for these classes
+	log E $DEST does not exist for these classes
 	exit 1
 fi
 
@@ -83,7 +108,7 @@ if [ -n "$INSTEAD" ]; then
 fi
 
 if [ -e $DEST ] && diff $SRC $DEST > /dev/null; then
-	echo $DEST already there and new.
+	log I $DEST already there and new.
 else
 	if [ -e $DEST ]; then
 		$CP -v $DEST $ORIG_SRC/$HOSTNAME.$(date +%Y%m%d%H%M)
