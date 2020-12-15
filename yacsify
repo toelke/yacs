@@ -28,9 +28,9 @@ else
 	source $(dirname "$0")/config
 fi
 
-[ -z $CP ] && export CP=cp
-[ -z $STAT ] && export STAT=stat
-[ -z $MKDIR ] && export MKDIR=mkdir
+CP=${CP=cp}
+STAT=${STAT=stat}
+MKDIR=${MKDIR=mkdir}
 
 if [ ! -f "$1" ]; then
 	log E $1 is no file!
