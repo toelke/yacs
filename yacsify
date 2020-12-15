@@ -60,7 +60,11 @@ $STAT -c "%U:%G %a" $1 > $DATA/$dir/$file/file-mode
 
 cd $DATA
 
-git add ./$dir/$file/$HOSTNAME
-git add ./$dir/$file/file-mode
+if [ -d .git ]; then
+	git add ./$dir/$file/$HOSTNAME
+	git add ./$dir/$file/file-mode
 
-git commit -a -m "Autocommit: yacsified $dir/$file;"
+	git commit -a -m "Autocommit: yacsified $dir/$file;"
+else
+	log I not using git
+fi
