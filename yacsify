@@ -21,8 +21,10 @@ log() {
 	echo $@
 }
 if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
+	log I loading config $(dirname "$0")/config.$HOSTNAME
 	source $(dirname "$0")/config.$HOSTNAME
 else
+	log I loading config $(dirname "$0")/config
 	source $(dirname "$0")/config
 fi
 
@@ -31,7 +33,7 @@ fi
 [ -z $MKDIR ] && export MKDIR=mkdir
 
 if [ ! -f "$1" ]; then
-	echo $1 is no file!
+	log E $1 is no file!
 	exit 1
 fi
 
