@@ -46,9 +46,12 @@ else
 	file=$(basename "$mf")
 fi
 
+log D will handle file $file from directory $dir
+
 $MKDIR -p $DATA/$dir/$file
 
 target=$DATA/$dir/$file/$HOSTNAME
+log D will copy to $target
 
 $CP -v $1 $target
 
