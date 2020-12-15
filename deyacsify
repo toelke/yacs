@@ -29,11 +29,11 @@ else
 	source $(dirname "$0")/config
 fi
 
-[ -z $CP ] && export CP=cp
-[ -z $STAT ] && export STAT=stat
-[ -z $CHMOD ] && export CHMOD=chmod
-[ -z $CHOWN ] && export CHOWN=chown
-[ -z $MKTEMP ] && export MKTEMP=mktemp
+CP=${CP=cp}
+STAT=${STAT=stat}
+CHMOD=${CHMOD=chmod}
+CHOWN=${CHOWN=chown}
+MKTEMP=${MKTEMP=mktemp}
 
 if [ ${1:0:1} == '/' ]; then
 	dir=$(dirname "$1")
