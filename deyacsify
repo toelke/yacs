@@ -103,7 +103,7 @@ export SRC=$(find_class_file)
 export PRE=$(find_executable_class_file pre)
 export INSTEAD=$(find_executable_class_file instead)
 export POST=$(find_executable_class_file post)
-export MODE=$(cat "$(find_mode_file)")
+export MODE=$(sed -e "s/CURRENT_USER/$USER/;s/CURRENT_GROUP/$(id -gn)/" "$(find_mode_file)")
 
 if [ -z "$SRC" -a -z "$INSTEAD" ]; then
 	log E $DEST does not exist for these classes

@@ -93,7 +93,7 @@ $MKDIR -p $DATA/$tdir/$file
 $CP -v $1 $target
 chmod 644 $target
 
-$STAT -c "%U:%G %a" $1 > $DATA/$tdir/$file/file-mode
+$STAT -c "%U:%G %a" $1 | sed -e "s/^$USER:/CURRENT_USER:/;s/:$(id -gn) /:CURRENT_GROUP /" > $DATA/$tdir/$file/file-mode
 
 cd $DATA
 
