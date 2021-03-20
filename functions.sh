@@ -52,7 +52,9 @@ resolve_home_dir() {
 function load_classes {
 	export CLASSES=''
 
-	[ -e $DATA/classes.$HOSTNAME ] && export CLASSES=$(cat $DATA/classes.$HOSTNAME)
+	if [ -e $DATA/classes.$HOSTNAME ]; then
+	   CLASSES=$(cat $DATA/classes.$HOSTNAME)
+	fi
 }
 
 function find_class_file {
