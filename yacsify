@@ -36,7 +36,13 @@ if [ ! -f "$1" ]; then
 fi
 
 if [ -L "$1" ]; then
-	log E $1 is a symlink
+	log I $1 is a symlink
+	if [[ $(readlink "$1") =~ $DATA ]]; then
+		# FIXME yacsify LINK
+		log I but it belongs to me
+		deyacsify
+		exit $?
+	fi
 	exit 1
 fi
 
