@@ -57,7 +57,7 @@ fi
 
 if [ $UPDATE_ONLY -eq 1 ]; then
 	log E not overwriting file $1
-	exit 0
+	exit 1
 fi
 
 # yacsify FILE
