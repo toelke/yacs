@@ -48,3 +48,27 @@ resolve_home_dir() {
 	fi
 	log D dir in target is $tdir
 }
+
+function load_classes {
+	export CLASSES=''
+
+	[ -e $DATA/classes.$HOSTNAME ] && export CLASSES=$(cat $DATA/classes.$HOSTNAME)
+}
+
+function find_class_file {
+	for i in $HOSTNAME $CLASSES DEFAULT; do
+		if [ -e $ORIG_SRC/$i ]; then
+		   echo $ORIG_SRC/$i
+		   return
+	   fi
+   done
+}
+
+function find_executable_class_file {
+	for i in $HOSTNAME $CLASSES DEFAULT; do
+		if [ -x $ORIG_SRC/$1.$i ]; then
+		   echo $ORIG_SRC/$1.$i
+		   return
+	   fi
+   done
+}
