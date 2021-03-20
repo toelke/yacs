@@ -49,6 +49,44 @@ resolve_home_dir() {
 	log D dir in target is $tdir
 }
 
+deyacsify() {
+	load_classes
+	SRC=$DATA/$tdir/$file
+	# SRC will be changed if a class-file is used
+	ORIG_SRC=$SRC
+	DEST=$dir/$file
+	if [ ! -d "$SRC" ]; then
+		log E $DEST is not under yacss control, so I cannot do anything for it
+		exit 1
+	fi
+	SRC=$(find_class_file)
+	PRE=$(find_executable_class_file pre)
+	INSTEAD=$(find_executable_class_file instead)
+	POST=$(find_executable_class_file post)
+
+	if [ -L $DEST ]; then
+		if [ $(readlink $DEST) == $SRC ]; then
+			log I link already current
+			exit 0
+		fi
+	fi
+
+	if [ -z "$SRC" -a -z "$INSTEAD" ]; then
+		log E $DEST does not exist for these classes
+		exit 1
+	fi
+
+	if [ -n "$INSTEAD" ]; then
+		# FIXME
+		export SRC=$($MKTEMP)
+		$INSTEAD > $SRC
+	fi
+
+	[ -n "$PRE" ] && $PRE
+	$LN -svf $SRC $DEST
+	[ -n "$POST" ] && $POST
+}
+
 function load_classes {
 	export CLASSES=''
 
