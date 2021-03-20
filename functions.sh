@@ -65,13 +65,6 @@ deyacsify() {
 	INSTEAD=$(find_executable_class_file instead)
 	POST=$(find_executable_class_file post)
 
-	if [ -L $DEST ]; then
-		if [ $(readlink $DEST) == $SRC ]; then
-			log I link already current
-			exit 0
-		fi
-	fi
-
 	if [ -z "$SRC" -a -z "$INSTEAD" ]; then
 		if [ $UPDATE_ONLY -eq 1 ]; then
 			log I $DEST does not exist for these classes
@@ -79,6 +72,13 @@ deyacsify() {
 		else
 			log E $DEST does not exist for these classes
 			exit 1
+		fi
+	fi
+
+	if [ -L $DEST ]; then
+		if [ $(readlink $DEST) == $SRC ]; then
+			log I link already current
+			exit 0
 		fi
 	fi
 
@@ -120,7 +120,7 @@ function find_executable_class_file {
 }
 
 function update_all {
-	find $DATA -type d | grep -R '/\.git/' | sort -r | awk 'index(a,$0)!=1{a=$0;print}' | sort | while read line; do
+	find $DATA -type d | grep -v '/\.git/' | sort -r | awk 'index(a,$0)!=1{a=$0;print}' | sort | while read line; do
 		target=$(echo ${line#$DATA} | sed -e "s,HOME,$HOME,")
 		log W yacsifying $target
 		$(dirname $0)/yacsify --update-only $target
