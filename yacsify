@@ -1,25 +1,9 @@
 #!/bin/bash -eu
 
-# EWID
-LOGLEVEL=${LOGLEVEL=W}
+source "$(dirname "$0")"/functions.sh
+source "$(dirname "$0")"/constants.sh
 
-log() {
-	ll=$1
-	if [ $LOGLEVEL == I ]; then
-		if [[ "D" == *$ll* ]]; then
-			return
-		fi
-	elif [ $LOGLEVEL == W ]; then
-		if [[ "DI" == *$ll* ]]; then
-			return
-		fi
-	elif [ $LOGLEVEL == E ]; then
-		if [[ "DIW" == *$ll* ]]; then
-			return
-		fi
-	fi
-	echo $@
-}
+load_config
 
 FORCE=0
 
@@ -39,18 +23,6 @@ while [[ $# -gt 1 ]]; do
 	fi
 done
 
-if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
-	log I loading config $(dirname "$0")/config.$HOSTNAME
-	source $(dirname "$0")/config.$HOSTNAME
-else
-	log I loading config $(dirname "$0")/config
-	source $(dirname "$0")/config
-fi
-
-MKDIR=${MKDIR=mkdir}
-MV=${MV=mv}
-LN=${LN=ln}
-
 if [ ! -f "$1" ]; then
 	log E $1 is no file!
 	exit 1
@@ -61,23 +33,11 @@ if [ -L "$1" ]; then
 	exit 1
 fi
 
-if [ ${1:0:1} == '/' ]; then
-	dir=$(dirname "$1")
-	file=$(basename "$1")
-else
-	mf=$PWD/$1
-	dir=$(dirname "$mf")
-	file=$(basename "$mf")
-fi
-
+# yacsify FILE
+get_dir_and_file $1
 log D will handle file $file from directory $dir
 
-if [[ ! ("$(realpath --relative-to $HOME $dir)" =~ "../") ]]; then
-	tdir=HOME/$(realpath --relative-to $HOME $dir)
-else
-	tdir=$dir
-fi
-log D dir in target is $tdir
+resolve_home_dir
 
 targetfilename=${TARGET_CLASS=$HOSTNAME}
 target=$DATA/$tdir/$file/$targetfilename
