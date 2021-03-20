@@ -27,16 +27,6 @@ function find_class_file {
    done
 }
 
-function find_mode_file {
-	for i in $HOSTNAME $CLASSES DEFAULT; do
-		if [ -e $ORIG_SRC/file-mode.$i ]; then
-		   echo $ORIG_SRC/file-mode.$i
-		   return
-	   fi
-	done
-	echo $ORIG_SRC/file-mode
-}
-
 function find_executable_class_file {
 	for i in $HOSTNAME $CLASSES DEFAULT; do
 		if [ -x $ORIG_SRC/$1.$i ]; then
@@ -60,7 +50,6 @@ export SRC=$(find_class_file)
 export PRE=$(find_executable_class_file pre)
 export INSTEAD=$(find_executable_class_file instead)
 export POST=$(find_executable_class_file post)
-export MODE=$(sed -e "s/CURRENT_USER/$USER/;s/CURRENT_GROUP/$(id -gn)/" "$(find_mode_file)")
 
 if [ -z "$SRC" -a -z "$INSTEAD" ]; then
 	log E $DEST does not exist for these classes
@@ -84,10 +73,4 @@ else
 	$CP -v $SRC $DEST
 
 	[ -n "$POST" ] && $POST
-fi
-
-if [ "$($STAT -c "%U:%G %a" $DEST)" != "$MODE" ]; then
-	echo Setting mode to $MODE
-	$CHOWN -v ${MODE% *} $DEST
-	$CHMOD -v ${MODE#* } $DEST
 fi
