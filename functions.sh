@@ -3,6 +3,7 @@ LOGLEVEL=${LOGLEVEL=W}
 
 log() {
 	ll=$1
+	shift
 	if [ $LOGLEVEL == I ]; then
 		if [[ "D" == *$ll* ]]; then
 			return
@@ -16,7 +17,7 @@ log() {
 			return
 		fi
 	fi
-	echo $@
+	echo $ll: $@
 }
 
 load_config() {
@@ -72,8 +73,13 @@ deyacsify() {
 	fi
 
 	if [ -z "$SRC" -a -z "$INSTEAD" ]; then
-		log E $DEST does not exist for these classes
-		exit 1
+		if [ $UPDATE_ONLY -eq 1 ]; then
+			log I $DEST does not exist for these classes
+			exit 0
+		else
+			log E $DEST does not exist for these classes
+			exit 1
+		fi
 	fi
 
 	if [ -n "$INSTEAD" ]; then
@@ -111,4 +117,12 @@ function find_executable_class_file {
 		   return
 	   fi
    done
+}
+
+function update_all {
+	find $DATA -type d | sort -r | awk 'index(a,$0)!=1{a=$0;print}' | sort | while read line; do
+		target=$(echo ${line#$DATA} | sed -e "s,HOME,$HOME,")
+		log W yacsifying $target
+		$(dirname $0)/yacsify --update-only $target
+	done
 }

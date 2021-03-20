@@ -6,6 +6,12 @@ source "$(dirname "$0")"/constants.sh
 load_config
 
 FORCE=0
+UPDATE_ONLY=0
+
+if [[ "$1" == "--update-all" || "$1" == "-a" ]]; then
+	update_all
+	exit $?
+fi
 
 while [[ $# -gt 1 ]]; do
 	if [[ "$1" == "--default" || "$1" == "-d" ]]; then
@@ -20,6 +26,9 @@ while [[ $# -gt 1 ]]; do
 	elif [[ "$1" == "--force" || "$1" == "-f" ]]; then
 		shift
 		FORCE=1
+	elif [[ "$1" == "--update-only" ]]; then
+		shift
+		UPDATE_ONLY=1
 	fi
 done
 
@@ -29,7 +38,7 @@ log D will handle file $file from directory $dir
 resolve_home_dir
 
 if [ ! -f "$1" ]; then
-	log E $1 is no file!
+	log I $1 is no file!
 	# FIXME yacsify NON-EXISTING
 	deyacsify
 	exit 0
@@ -44,6 +53,11 @@ if [ -L "$1" ]; then
 		exit $?
 	fi
 	exit 1
+fi
+
+if [ $UPDATE_ONLY -eq 1 ]; then
+	log E not overwriting file $1
+	exit 0
 fi
 
 # yacsify FILE
