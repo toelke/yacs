@@ -78,8 +78,7 @@ $LN -svf $target $1
 cd $DATA
 
 if [ -d .git ]; then
-	git add ./$tdir/$file/$HOSTNAME
-	git add ./$tdir/$file/file-mode
+	git add $target
 
 	git commit -a -m "Autocommit: yacsified $dir/$file;"
 else

@@ -120,7 +120,7 @@ function find_executable_class_file {
 }
 
 function update_all {
-	find $DATA -type d | sort -r | awk 'index(a,$0)!=1{a=$0;print}' | sort | while read line; do
+	find $DATA -type d | grep -R '/\.git/' | sort -r | awk 'index(a,$0)!=1{a=$0;print}' | sort | while read line; do
 		target=$(echo ${line#$DATA} | sed -e "s,HOME,$HOME,")
 		log W yacsifying $target
 		$(dirname $0)/yacsify --update-only $target
