@@ -17,7 +17,7 @@ log() {
 			return
 		fi
 	fi
-	echo $ll: $@
+	echo "$ll": $@
 }
 
 load_config() {
@@ -28,26 +28,6 @@ load_config() {
 		log I loading config $(dirname "$0")/config
 		source $(dirname "$0")/config
 	fi
-}
-
-get_dir_and_file() {
-	if [ ${1:0:1} == '/' ]; then
-		dir=$(dirname "$1")
-		file=$(basename "$1")
-	else
-		mf=$PWD/$1
-		dir=$(dirname "$mf")
-		file=$(basename "$mf")
-	fi
-}
-
-resolve_home_dir() {
-	if [[ ! ("$(realpath --relative-to $HOME $dir)" =~ "../") ]]; then
-		tdir=HOME/$(realpath --relative-to $HOME $dir)
-	else
-		tdir=$dir
-	fi
-	log D dir in target is $tdir
 }
 
 deyacsify() {
@@ -125,4 +105,22 @@ function update_all {
 		log W yacsifying $target
 		$(dirname $0)/yacsify --update-only $target
 	done
+}
+
+# ====== ng from here
+
+function copy_out_of_yacs {
+	echo copying "$1" to "$2" while handling permissions
+	mkdir -pv "$(dirname "$1")"
+	$CP -v "$1" "$2"
+	mode=$(sed -e "s/CURRENT_USER/$USER/;s/CURRENT_GROUP/$(id -gn)/" < "$(dirname $1)/file-mode")
+	$CHOWN -v ${mode% *} "$2"
+	$CHMOD -v ${mode#* } "$2"
+}
+
+function copy_into_yacs {
+	log D copying "$1" into yacs as "$2"
+	mkdir -pv "$(dirname "$2")"
+	$CP -v "$1" "$2"
+	$STAT -c "%U:%G %a" "$1" | sed -e "s/^$USER:/CURRENT_USER:/;s/:$(id -gn) /:CURRENT_GROUP /" > "$(dirname "$2")/file-mode"
 }

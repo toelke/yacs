@@ -1,0 +1,83 @@
+#!/bin/bash -eu
+
+set -o pipefail
+
+source "$(dirname "$0")"/functions.sh
+source "$(dirname "$0")"/constants.sh
+
+load_config
+
+while [[ $# -gt 1 ]]; do
+	if [[ "$1" == "--default" || "$1" == "-d" ]]; then
+		shift
+		TARGET_CLASS=DEFAULT
+		log D using TARGET_CLASS="$TARGET_CLASS"
+	elif [[ "$1" == "--class" || "$1" == "-c" ]]; then
+		shift
+		TARGET_CLASS=$1
+		shift
+		log D using TARGET_CLASS="$TARGET_CLASS"
+	fi
+done
+
+# get_dir_and_file
+if [[ "${1:0:1}" == '/' ]]; then
+	dir=$(dirname "$1")
+	file=$(basename "$1")
+else
+	mf=$PWD/$1
+	dir=$(dirname "$mf")
+	file=$(basename "$mf")
+fi
+log D will handle file "$file" from directory "$dir"
+
+# resolve_home_dir
+if [[ ! ("$(realpath --relative-to "$HOME" "$dir")" =~ \.\./) ]]; then
+	tdir=HOME/$(realpath --relative-to "$HOME" "$dir")
+else
+	tdir=$dir
+fi
+log D dir in target is "$tdir"
+
+#load_classes
+CLASSES=''
+if [[ -e "$BASE/classes.$HOSTNAME" ]]; then
+   CLASSES=$(cat "$BASE/classes.$HOSTNAME")
+fi
+
+yacsfile="//NOT_FOUND//"
+for class in $HOSTNAME $CLASSES DEFAULT; do
+	yacsfilename=$class
+	_yacsfile=$DATA/$tdir/$file/$yacsfilename
+	if [[ -e "$_yacsfile" ]]; then
+		yacsfile="$_yacsfile"
+		log D file in data directory is "$yacsfile"
+		break
+	fi
+done
+
+if [[ ! -e "$dir/$file" ]]; then
+	log D source does not exist
+	if [[ "$yacsfile" == "//NOT_FOUND//" ]]; then
+		log E "$dir/$file" cannot be found in yacs with any of the classes "$CLASSES" or DEFAULT
+		exit 1
+	fi
+	copy_out_of_yacs "$yacsfile" "$dir/$file"
+else
+	log D source file exists
+
+	if [[ ! -e "$yacsfile" ]]; then
+		log D file does not exist in yacs, copying into yacs
+		targetfilename=${TARGET_CLASS=$HOSTNAME}
+		yacsfile=$DATA/$tdir/$file/$targetfilename
+		copy_into_yacs "$dir/$file" "$yacsfile"
+	else
+		log D target file exists
+		if cmp "$dir/$file" "$yacsfile"; then
+			log W The file is up-to-date
+		else
+			vimdiff "$dir/$file" "$yacsfile"
+			# TODO copy permissions
+		fi
+	fi
+fi
