@@ -19,7 +19,7 @@ if [[ "$1" == "--all" ]]; then
 		find $DATA -name "$class"
 	done |  while read -r canditate; do
 		realpath -sm "$(dirname "${canditate#$DATA}" | sed -e "s,HOME,$HOME,")"
-	done | sort -u | xargs -on1 yacs
+	done | sort -u | xargs -on1 "$0"
 	exit 0
 fi
 
