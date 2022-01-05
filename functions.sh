@@ -21,12 +21,13 @@ log() {
 }
 
 load_config() {
-	if [ -e $(dirname "$0")/config.$HOSTNAME ]; then
-		log I loading config $(dirname "$0")/config.$HOSTNAME
-		source $(dirname "$0")/config.$HOSTNAME
+	real_file=$(readlink "$0")
+	if [ -e $(dirname "$real_file")/config.$HOSTNAME ]; then
+		log I loading config $(dirname "$real_file")/config.$HOSTNAME
+		source $(dirname "$real_file")/config.$HOSTNAME
 	else
-		log I loading config $(dirname "$0")/config
-		source $(dirname "$0")/config
+		log I loading config $(dirname "$real_file")/config
+		source $(dirname "$real_file")/config
 	fi
 }
 

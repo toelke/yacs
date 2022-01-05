@@ -2,8 +2,8 @@
 
 set -o pipefail
 
-source "$(dirname "$0")"/functions.sh
-source "$(dirname "$0")"/constants.sh
+source "$(dirname "$(readlink "$0")")"/functions.sh
+source "$(dirname "$(readlink "$0")")"/constants.sh
 
 load_config
 
