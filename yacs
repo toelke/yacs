@@ -7,6 +7,22 @@ source "$(dirname "$(readlink "$0")")"/constants.sh
 
 load_config
 
+#load_classes
+CLASSES=''
+if [[ -e "$BASE/classes.$HOSTNAME" ]]; then
+   CLASSES=$(cat "$BASE/classes.$HOSTNAME")
+fi
+
+if [[ "$1" == "--all" ]]; then
+	log D doing all
+	for class in DEFAULT $CLASSES $HOSTNAME; do
+		find $DATA -name "$class"
+	done |  while read -r canditate; do
+		realpath -sm "$(dirname "${canditate#$DATA}" | sed -e "s,HOME,$HOME,")"
+	done | sort -u | xargs -on1 yacs
+	exit 0
+fi
+
 while [[ $# -gt 1 ]]; do
 	if [[ "$1" == "--default" || "$1" == "-d" ]]; then
 		shift
@@ -39,12 +55,6 @@ else
 fi
 log D dir in target is "$tdir"
 
-#load_classes
-CLASSES=''
-if [[ -e "$BASE/classes.$HOSTNAME" ]]; then
-   CLASSES=$(cat "$BASE/classes.$HOSTNAME")
-fi
-
 yacsfile="//NOT_FOUND//"
 for class in $HOSTNAME $CLASSES DEFAULT; do
 	yacsfilename=$class
@@ -74,7 +84,7 @@ else
 	else
 		log D target file exists
 		if cmp "$dir/$file" "$yacsfile"; then
-			log W The file is up-to-date
+			log W The file "$dir/$file" is up-to-date
 		else
 			vimdiff "$dir/$file" "$yacsfile"
 			# TODO copy permissions
