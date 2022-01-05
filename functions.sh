@@ -21,7 +21,7 @@ log() {
 }
 
 load_config() {
-	real_file=$(readlink "$0")
+	real_file=$(realpath "$0")
 	if [ -e $(dirname "$real_file")/config.$HOSTNAME ]; then
 		log I loading config $(dirname "$real_file")/config.$HOSTNAME
 		source $(dirname "$real_file")/config.$HOSTNAME
