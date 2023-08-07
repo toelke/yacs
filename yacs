@@ -16,7 +16,7 @@ fi
 if [[ "$1" == "--all" ]]; then
 	log D doing all
 	for class in DEFAULT $CLASSES $HOSTNAME; do
-		find $DATA -name "$class"
+		find $DATA -type f -name "$class"
 	done |  while read -r canditate; do
 		realpath -sm "$(dirname "${canditate#$DATA}" | sed -e "s,HOME,$HOME,")"
 	done | sort -u | xargs -on1 "$0"
