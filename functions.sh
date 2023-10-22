@@ -114,7 +114,7 @@ function copy_out_of_yacs {
 	echo copying "$1" to "$2" while handling permissions
 	mkdir -pv "$(dirname "$2")"
 	$CP -v "$1" "$2"
-	mode=$(sed -e "s/CURRENT_USER/$USER/;s/CURRENT_GROUP/$(id -gn)/" < "$(dirname $1)/file-mode")
+	mode=$(sed -e "s/CURRENT_USER/$USER/;s/CURRENT_GROUP/$(id -gn)/" < "$(dirname "$1")/file-mode")
 	$CHOWN -v ${mode% *} "$2"
 	$CHMOD -v ${mode#* } "$2"
 }
