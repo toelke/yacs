@@ -85,7 +85,11 @@ else
 		if cmp "$dir/$file" "$yacsfile"; then
 			log W The file "$dir/$file" is up-to-date
 		else
-			vimdiff "$dir/$file" "$yacsfile"
+			if [ ! -w "$dir/$file" ]; then
+				VISUAL="$(which vim) \"+vert diffsplit $yacsfile\"" sudoedit "$dir/$file"
+			else
+				vimdiff "$yacsfile" "$dir/$file"
+			fi
 			# TODO copy permissions
 		fi
 	fi
