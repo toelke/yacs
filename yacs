@@ -83,7 +83,7 @@ else
 	else
 		log D target file exists
 		if cmp "$dir/$file" "$yacsfile"; then
-			log W The file "$dir/$file" is up-to-date
+			log I The file "$dir/$file" is up-to-date
 		else
 			if [ ! -w "$dir/$file" ]; then
 				VISUAL="$(which vim) \"+vert diffsplit $yacsfile\"" sudoedit "$dir/$file"
