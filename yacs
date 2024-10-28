@@ -56,6 +56,14 @@ log D dir in target is "$tdir"
 
 yacsfile="//NOT_FOUND//"
 for class in $HOSTNAME $CLASSES DEFAULT; do
+	if [[ -e "$DATA/$tdir/$file/not-for-classes" ]]; then
+		if grep -q "^$class$" "$DATA/$tdir/$file/not-for-classes"; then
+			log I file is not for class "$class"
+			exit 1
+		fi
+	fi
+done
+for class in $HOSTNAME $CLASSES DEFAULT; do
 	yacsfilename=$class
 	_yacsfile="$DATA/$tdir/$file/$yacsfilename"
 	if [[ -e "$_yacsfile" ]]; then
