@@ -12,93 +12,99 @@ if [[ -e "$BASE/classes.$HOSTNAME" ]]; then
    CLASSES=$(cat "$BASE/classes.$HOSTNAME")
 fi
 
+function yacs () {
+	while [[ $# -gt 1 ]]; do
+		if [[ "$1" == "--default" || "$1" == "-d" ]]; then
+			shift
+			TARGET_CLASS=DEFAULT
+			log D using TARGET_CLASS="$TARGET_CLASS"
+		elif [[ "$1" == "--class" || "$1" == "-c" ]]; then
+			shift
+			TARGET_CLASS=$1
+			shift
+			log D using TARGET_CLASS="$TARGET_CLASS"
+		fi
+	done
+
+	# get_dir_and_file
+	if [[ "${1:0:1}" == '/' ]]; then
+		dir=$(dirname "$1")
+		file=$(basename "$1")
+	else
+		mf=$PWD/$1
+		dir=$(dirname "$mf")
+		file=$(basename "$mf")
+	fi
+	log D will handle file "$file" from directory "$dir"
+
+	# resolve_home_dir
+	if [[ ! ("$(realpath --relative-to "$HOME" "$dir")" =~ \.\./) ]]; then
+		tdir=HOME/$(realpath --relative-to "$HOME" "$dir")
+	else
+		tdir=$dir
+	fi
+	log D dir in target is "$tdir"
+
+	yacsfile="//NOT_FOUND//"
+	for class in $HOSTNAME $CLASSES DEFAULT; do
+		if [[ -e "$DATA/$tdir/$file/not-for-classes" ]]; then
+			if grep -q "^$class$" "$DATA/$tdir/$file/not-for-classes"; then
+				log I file is not for class "$class"
+				return 1
+			fi
+		fi
+	done
+	for class in $HOSTNAME $CLASSES DEFAULT; do
+		yacsfilename=$class
+		_yacsfile="$DATA/$tdir/$file/$yacsfilename"
+		if [[ -e "$_yacsfile" ]]; then
+			yacsfile="$_yacsfile"
+			log D file in data directory is "$yacsfile"
+			break
+		fi
+	done
+
+	if [[ ! -e "$dir/$file" ]]; then
+		log D source does not exist
+		if [[ "$yacsfile" == "//NOT_FOUND//" ]]; then
+			log E "$dir/$file" cannot be found in yacs with any of the classes "$CLASSES" or DEFAULT
+			return 1
+		fi
+		copy_out_of_yacs "$yacsfile" "$dir/$file"
+	else
+		log D source file exists
+
+		if [[ ! -e "$yacsfile" ]]; then
+			log D file does not exist in yacs, copying into yacs
+			targetfilename=${TARGET_CLASS=$HOSTNAME}
+			yacsfile=$DATA/$tdir/$file/$targetfilename
+			copy_into_yacs "$dir/$file" "$yacsfile"
+		else
+			log D target file exists
+			if cmp "$dir/$file" "$yacsfile"; then
+				log I The file "$dir/$file" is up-to-date
+			else
+				if [ ! -w "$dir/$file" ]; then
+					echo "$dir/$file" | VISUAL="$(which vim) \"+vert diffsplit $yacsfile\"" xargs -o sudoedit "$dir/$file"
+				else
+					echo "$yacsfile" "$dir/$file" | xargs -o vimdiff
+				fi
+				# TODO copy permissions
+			fi
+		fi
+	fi
+}
+
 if [[ "$1" == "--all" ]]; then
 	log D doing all
 	for class in DEFAULT $CLASSES $HOSTNAME; do
 		find $DATA -type f -name "$class"
 	done |  while read -r canditate; do
 		realpath -sm "$(dirname "${canditate#$DATA}" | sed -e "s,HOME,$HOME,")"
-	done | sort -u | xargs -on1 -d $'\n' "$0"
+	done | sort -u | while read line; do
+		yacs "$line" || true
+	done
 	exit 0
 fi
 
-while [[ $# -gt 1 ]]; do
-	if [[ "$1" == "--default" || "$1" == "-d" ]]; then
-		shift
-		TARGET_CLASS=DEFAULT
-		log D using TARGET_CLASS="$TARGET_CLASS"
-	elif [[ "$1" == "--class" || "$1" == "-c" ]]; then
-		shift
-		TARGET_CLASS=$1
-		shift
-		log D using TARGET_CLASS="$TARGET_CLASS"
-	fi
-done
-
-# get_dir_and_file
-if [[ "${1:0:1}" == '/' ]]; then
-	dir=$(dirname "$1")
-	file=$(basename "$1")
-else
-	mf=$PWD/$1
-	dir=$(dirname "$mf")
-	file=$(basename "$mf")
-fi
-log D will handle file "$file" from directory "$dir"
-
-# resolve_home_dir
-if [[ ! ("$(realpath --relative-to "$HOME" "$dir")" =~ \.\./) ]]; then
-	tdir=HOME/$(realpath --relative-to "$HOME" "$dir")
-else
-	tdir=$dir
-fi
-log D dir in target is "$tdir"
-
-yacsfile="//NOT_FOUND//"
-for class in $HOSTNAME $CLASSES DEFAULT; do
-	if [[ -e "$DATA/$tdir/$file/not-for-classes" ]]; then
-		if grep -q "^$class$" "$DATA/$tdir/$file/not-for-classes"; then
-			log I file is not for class "$class"
-			exit 1
-		fi
-	fi
-done
-for class in $HOSTNAME $CLASSES DEFAULT; do
-	yacsfilename=$class
-	_yacsfile="$DATA/$tdir/$file/$yacsfilename"
-	if [[ -e "$_yacsfile" ]]; then
-		yacsfile="$_yacsfile"
-		log D file in data directory is "$yacsfile"
-		break
-	fi
-done
-
-if [[ ! -e "$dir/$file" ]]; then
-	log D source does not exist
-	if [[ "$yacsfile" == "//NOT_FOUND//" ]]; then
-		log E "$dir/$file" cannot be found in yacs with any of the classes "$CLASSES" or DEFAULT
-		exit 1
-	fi
-	copy_out_of_yacs "$yacsfile" "$dir/$file"
-else
-	log D source file exists
-
-	if [[ ! -e "$yacsfile" ]]; then
-		log D file does not exist in yacs, copying into yacs
-		targetfilename=${TARGET_CLASS=$HOSTNAME}
-		yacsfile=$DATA/$tdir/$file/$targetfilename
-		copy_into_yacs "$dir/$file" "$yacsfile"
-	else
-		log D target file exists
-		if cmp "$dir/$file" "$yacsfile"; then
-			log I The file "$dir/$file" is up-to-date
-		else
-			if [ ! -w "$dir/$file" ]; then
-				VISUAL="$(which vim) \"+vert diffsplit $yacsfile\"" sudoedit "$dir/$file"
-			else
-				vimdiff "$yacsfile" "$dir/$file"
-			fi
-			# TODO copy permissions
-		fi
-	fi
-fi
+yacs "$@"
