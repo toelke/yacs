@@ -38,8 +38,8 @@ function yacs () {
 	log D will handle file "$file" from directory "$dir"
 
 	# resolve_home_dir
-	if [[ ! ("$(realpath --relative-to "$HOME" "$dir")" =~ \.\./) ]]; then
-		tdir=HOME/$(realpath --relative-to "$HOME" "$dir")
+	if [[ ! ("$(realpath --canonicalize-missing --relative-to "$HOME" "$dir")" =~ \.\./) ]]; then
+		tdir=HOME/$(realpath --canonicalize-missing --relative-to "$HOME" "$dir")
 	else
 		tdir=$dir
 	fi
