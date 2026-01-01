@@ -84,10 +84,27 @@ function yacs () {
 			if cmp "$dir/$file" "$yacsfile"; then
 				log I The file "$dir/$file" is up-to-date
 			else
-				if [ ! -w "$dir/$file" ]; then
-					echo "$dir/$file" | VISUAL="$(which vim) \"+vert diffsplit $yacsfile\"" xargs -o sudoedit "$dir/$file"
+				# Check if local file was never edited locally (matches any git version)
+				local_unchanged=false
+				if git -C "$dir" rev-parse --is-inside-work-tree &>/dev/null; then
+					# Check if file content exists in git's object database
+					file_hash=$(git -C "$dir" hash-object "$file" 2>/dev/null)
+					if [ -n "$file_hash" ] && git -C "$dir" cat-file -e "$file_hash" 2>/dev/null; then
+						log I Local file "$dir/$file" was never edited locally, applying yacs version
+						local_unchanged=true
+					fi
+				fi
+
+				if $local_unchanged; then
+					# Local file has no changes, safe to overwrite with yacs version
+					copy_out_of_yacs "$yacsfile" "$dir/$file"
 				else
-					echo "$yacsfile" "$dir/$file" | xargs -o vimdiff
+					# Local file has changes or not in git, open vimdiff for manual merge
+					if [ ! -w "$dir/$file" ]; then
+						echo "$dir/$file" | VISUAL="$(which vim) \"+vert diffsplit $yacsfile\"" xargs -o sudoedit "$dir/$file"
+					else
+						echo "$yacsfile" "$dir/$file" | xargs -o vimdiff
+					fi
 				fi
 				# TODO copy permissions
 			fi
